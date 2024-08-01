@@ -1,0 +1,80 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: "app-name"
+  namespace: "namespace"
+spec:
+  selector:
+    matchLabels:
+      app: "app-name"
+  serviceName: "service-name"
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: "app-name"
+    spec:
+      containers:
+      - image: "container_image"
+        name: "container_name"
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: "container_port"
+          name: "container_name"
+        volumeMounts:
+        - name: "app-name-pvc"
+          mountPath: "mount_path"
+  volumeClaimTemplates:
+  - metadata:
+      name: "app-name-pvc"
+    spec:
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: 10Gi
+      storageClassName: gp2
+      volumeMode: Filesystem
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: "service_name"
+  namespace: "namespace"
+spec:
+  ports:
+  - port: "app_port"
+    protocol: "protocol"
+    targetPort: "app_port"
+  selector:
+    app: "app-name"
+  type: ClusterIP
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: "name"
+spec:
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: gp2
+  awsElasticBlockStore:
+    volumeID: "aws-volume-id"
+    fsType: ext4
+  persistentVolumeReclaimPolicy: Retain
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: "name"
+  namespace: "namespace"
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: gp2
+  volumeMode: Filesystem
